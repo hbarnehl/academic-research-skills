@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lit Review Workbench</title>
+<style>
+:root {
+  --bg: #f6f5f2; --panel: #ffffff; --ink: #1d1f23; --muted: #6b6f76; --line: #e3e1dc;
+  --accent: #2f5d8a; --accent-soft: #e6eef6;
+  --inc: #2e7d4f; --inc-soft: #e3f2e8; --exc: #a33a3a; --exc-soft: #f6e4e4;
+  --may: #9a6b12; --may-soft: #f7eed9; --new: #6a3fa0; --new-soft: #efe7f8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181b; --panel: #1f2226; --ink: #e8e6e1; --muted: #9a9ea6; --line: #33373d;
+    --accent: #7fb0e0; --accent-soft: #24313f;
+    --inc: #6cc493; --inc-soft: #1f3328; --exc: #e48a8a; --exc-soft: #3a2324;
+    --may: #e0b75e; --may-soft: #3a3020; --new: #b99be3; --new-soft: #2e2539;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--line); }
+header h1 { font-size: 15px; margin: 0; }
+header .crumb { color: var(--muted); }
+header .crumb a { color: var(--accent); text-decoration: none; cursor: pointer; }
+.banner { background: var(--may-soft); color: var(--may); padding: 6px 20px; font-size: 12px; }
+main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; cursor: pointer; }
+.card:hover { border-color: var(--accent); }
+.card h3 { margin: 0 0 6px; font-size: 15px; }
+.card .rq { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+.stats { display: flex; gap: 14px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.stats b { color: var(--ink); font-size: 15px; display: block; }
+.card.newcard { display: flex; align-items: center; justify-content: center; color: var(--muted); border-style: dashed; min-height: 140px; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; overflow-x: auto; }
+.tab { padding: 8px 14px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); white-space: nowrap; }
+.tab.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.tab .n { background: var(--accent-soft); color: var(--accent); border-radius: 9px; padding: 0 6px; font-size: 11px; margin-left: 4px; }
+.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; background: var(--panel); }
+.seg button { border: 0; background: none; padding: 5px 10px; color: var(--muted); cursor: pointer; font: inherit; font-size: 13px; }
+.seg button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+select, input[type=search], textarea { font: inherit; font-size: 13px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--ink); }
+.tablewrap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 980px; }
+th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 13px; }
+tr.row { cursor: pointer; }
+tr.row:hover td { background: var(--accent-soft); }
+td.title { max-width: 260px; }
+td.sum { max-width: 320px; color: var(--muted); }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.inc { background: var(--inc-soft); color: var(--inc); } .exc { background: var(--exc-soft); color: var(--exc); }
+.may { background: var(--may-soft); color: var(--may); } .newp { background: var(--new-soft); color: var(--new); }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 5px; font-size: 11px; border: 1px solid var(--line); color: var(--muted); margin: 1px 2px 1px 0; }
+.txt { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--accent); display: inline-block; }
+.dot.full { background: var(--accent); }
+.dot.half { background: linear-gradient(90deg, var(--accent) 50%, transparent 50%); }
+.legend { font-size: 12px; color: var(--muted); display: flex; gap: 14px; margin-left: auto; flex-wrap: wrap; }
+.drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(560px, 100%); background: var(--panel); border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgba(0,0,0,.12); transform: translateX(100%); transition: transform .2s; overflow-y: auto; padding: 20px 22px 40px; z-index: 10; }
+.drawer.open { transform: none; }
+.drawer .x { float: right; cursor: pointer; border: 0; background: none; font-size: 22px; color: var(--muted); }
+.drawer h2 { font-size: 16px; margin: 0 0 4px; padding-right: 30px; }
+.drawer h4 { margin: 18px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.kv { display: grid; grid-template-columns: 130px 1fr; gap: 4px 10px; font-size: 13px; }
+.kv div:nth-child(odd) { color: var(--muted); }
+.weak { border-left: 3px solid var(--line); padding: 4px 10px; margin: 6px 0; font-size: 13px; }
+.weak.ack { border-color: var(--inc); } .weak.inf { border-color: var(--may); }
+.weak small { color: var(--muted); display: block; }
+.hist { font-size: 13px; } .hist div { padding: 3px 0; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 12px; border-radius: 7px; cursor: pointer; font: inherit; font-size: 13px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+.reports { display: grid; grid-template-columns: 240px 1fr; gap: 16px; }
+.vlist { display: flex; flex-direction: column; gap: 8px; }
+.ver { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; cursor: pointer; }
+.ver.on { border-color: var(--accent); background: var(--accent-soft); }
+.ver b { display: block; font-size: 13px; } .ver span { font-size: 12px; color: var(--muted); }
+.reader { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 26px 34px; max-width: 820px; }
+.reader h2 { margin-top: 0; font-size: 20px; } .reader h3 { font-size: 15px; margin-top: 22px; }
+.reader p { font-size: 14.5px; line-height: 1.65; }
+.cite { color: var(--accent); cursor: pointer; border-bottom: 1px dotted var(--accent); }
+.meta { font-size: 12px; color: var(--muted); margin-bottom: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.rounds { display: flex; flex-direction: column; gap: 14px; max-width: 900px; }
+.round { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; position: relative; }
+.round h3 { margin: 0 0 4px; font-size: 15px; }
+.round .q { color: var(--muted); font-size: 13px; }
+.round code { font-size: 12px; background: var(--bg); padding: 2px 6px; border-radius: 4px; display: inline-block; margin: 6px 0; }
+.funnel { display: flex; gap: 6px; align-items: flex-end; margin-top: 12px; flex-wrap: wrap; }
+.fstep { text-align: center; font-size: 11px; color: var(--muted); }
+.fbar { background: var(--accent); border-radius: 4px 4px 0 0; width: 92px; margin: 0 auto 4px; opacity: .85; }
+.fstep b { display: block; color: var(--ink); font-size: 14px; }
+.nextround { border-style: dashed; }
+.nextround textarea { width: 100%; min-height: 60px; margin-top: 8px; }
+.queue .qrow { display: flex; gap: 12px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 10px 14px; margin-bottom: 8px; flex-wrap: wrap; }
+.queue .qrow .t { flex: 1; min-width: 220px; font-size: 13px; }
+.queue .qrow .t small { color: var(--muted); display: block; }
+.drop { border: 1.5px dashed var(--line); border-radius: 7px; padding: 6px 12px; font-size: 12px; color: var(--muted); }
+.note { color: var(--muted); font-size: 12px; margin: 6px 0 14px; }
+@media (max-width: 760px) {
+  main { padding: 16px; } .reports { grid-template-columns: 1fr; } .reader { padding: 18px 16px; }
+  .vlist { flex-direction: row; overflow-x: auto; } .ver { min-width: 180px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Lit Review Workbench</h1>
+  <span class="crumb" id="crumb"></span>
+</header>
+<div class="banner">Design sketch. All sources, authors and findings below are fictional placeholders.</div>
+<main id="app"></main>
+<aside class="drawer" id="drawer"></aside>
+
+<script>
+// ---------- fictional dummy data ----------
+const projects = [
+  { id: "shutdowns", title: "Internet shutdowns and state violence",
+    rq: "Do government-imposed internet shutdowns change the scale and targeting of state violence during unrest?",
+    updated: "2026-11-04",
+    rounds: [
+      { id: "R0", name: "Initial overview", parent: null, date: "2026-10-20",
+        focus: "Broad map of the shutdown and repression literature",
+        search: '("internet shutdown" OR "network disruption" OR blackout) AND (repression OR "state violence" OR killings)',
+        funnel: [412, 412, 38, 24, 21] },
+      { id: "R1", name: "Deep dive: shutdown duration", parent: "R0", date: "2026-10-29",
+        focus: "Does the length of a shutdown moderate its relationship with violence intensity?",
+        search: '("internet shutdown" OR blackout) AND (duration OR "length" OR prolonged) AND (violence OR casualties)',
+        funnel: [96, 96, 14, 11, 9] },
+      { id: "R2", name: "Deep dive: measuring shutdowns", parent: "R0", date: "2026-11-04",
+        focus: "How are shutdowns measured, and how do measurement choices affect findings?",
+        search: '("internet outage" OR "connectivity") AND (measurement OR "remote sensing" OR "network data" OR BGP)',
+        funnel: [154, 154, 17, 9, 8] }
+    ] },
+  { id: "censorship", title: "Online censorship and protest mobilisation",
+    rq: "Does censorship of social media suppress or provoke protest participation?",
+    updated: "2026-09-18",
+    rounds: [{ id: "R0", name: "Initial overview", date: "2026-09-18", funnel: [288, 288, 30, 17, 15] }] },
+  { id: "satellite", title: "Satellite imagery for conflict event detection",
+    rq: "How reliably can remote sensing detect and date conflict events compared with event datasets?",
+    updated: "2026-11-01", rounds: [] }
+];
+
+const sources = [
+  { key: "lindqvist2019dark", authors: "Lindqvist & Oduya", year: 2019, title: "Going Dark: Network Disruptions and the Logic of Repression", venue: "Journal of Peace Research",
+    status: "include", text: "full", round: "R0", design: "Selection on observables", contribution: "Causal estimate",
+    ident: "Panel of country-weeks with fixed effects; no exogenous variation in shutdown timing",
+    cases: "Syria", period: "2012–2015", unit: "Governorate-week",
+    summary: "Finds that killings during disruptions are more often targeted rather than indiscriminate, consistent with shutdowns accompanying planned offensives.",
+    findings: ["Targeted killings share rises during disruptions", "Effect concentrated in contested governorates"],
+    weak: [{ t: "Shutdown timing is endogenous to planned offensives, so the estimate mixes the effect of the shutdown with the offensive itself.", p: "author-acknowledged", loc: "p. 14" },
+           { t: "Violence data come from activist reports, which drop during disruptions, so reporting bias runs in the direction of the finding.", p: "reader-inferred", loc: "Sec. 3.2 checked" }],
+    hist: [["R0", "abstract", "include", "Directly on RQ"], ["R0", "full text", "include", "Core study"]], themes: ["targeting", "Syria"] },
+  { key: "marchetti2021blackout", authors: "Marchetti", year: 2021, title: "Blackouts as Cover: Information Control during Crackdowns", venue: "Comparative Political Studies",
+    status: "include", text: "full", round: "R0", design: "Natural experiment", contribution: "Causal estimate",
+    ident: "Exploits staggered outages caused by infrastructure failures as comparison",
+    cases: "12 countries", period: "2016–2020", unit: "District-day",
+    summary: "Compares deliberate shutdowns with accidental outages and finds violence rises only with deliberate shutdowns.",
+    findings: ["No rise in violence during accidental outages", "Deliberate shutdowns precede violence spikes by 1–2 days"],
+    weak: [{ t: "Accidental outages may differ systematically in location (urban grid failures).", p: "author-acknowledged", loc: "p. 22" }],
+    hist: [["R0", "abstract", "include", "Directly on RQ"], ["R0", "full text", "include", "Strong design"]], themes: ["mechanism", "identification"] },
+  { key: "ferreira2022length", authors: "Ferreira & Holm", year: 2022, title: "How Long Is Too Long? Duration of Connectivity Restrictions and Civilian Harm", venue: "International Studies Quarterly",
+    status: "include", text: "full", round: "R1", design: "Difference-in-differences", contribution: "Causal estimate",
+    ident: "Event-study design comparing short and long shutdowns; pre-trends reported",
+    cases: "India, Ethiopia, Myanmar", period: "2017–2021", unit: "District-week",
+    summary: "Long shutdowns are associated with more civilian harm than short ones, but the difference appears only after the second week.",
+    findings: ["Non-linear duration effect", "Short shutdowns show no detectable change"],
+    weak: [{ t: "Duration is chosen by the government and may respond to the violence it is meant to explain.", p: "reader-inferred", loc: "Sec. 4 checked" }],
+    hist: [["R1", "abstract", "include", "Duration focus"], ["R1", "full text", "include", "Central to R1"]], themes: ["duration"] },
+  { key: "okafor2020mobile", authors: "Okafor", year: 2020, title: "Mobile Networks, Rumours and Riots", venue: "World Politics",
+    status: "include", text: "abstract", round: "R0", design: "Qualitative / case study", contribution: "Theory",
+    ident: "Process tracing in three cities", cases: "Nigeria", period: "2015–2018", unit: "City",
+    summary: "Argues that shutdowns cut off rumour correction as much as mobilisation, with ambiguous effects on violence.",
+    findings: ["Proposes a rumour-correction mechanism"], weak: [],
+    hist: [["R0", "abstract", "include", "Mechanism"], ["R0", "full text", "maybe", "Waiting for PDF"]], themes: ["mechanism"] },
+  { key: "vance2023outage", authors: "Vance, Ito & Barros", year: 2023, title: "Measuring Internet Outages from Space and from Routers", venue: "Political Analysis",
+    status: "include", text: "full", round: "R2", design: "Measurement", contribution: "Measurement",
+    ident: "Validates night-lights and BGP-based outage measures against a hand-coded set",
+    cases: "Global", period: "2015–2022", unit: "Country-day / grid cell",
+    summary: "BGP-based measures miss mobile-only shutdowns; combining them with traffic data recovers most hand-coded events.",
+    findings: ["BGP misses ~40% of mobile-only shutdowns", "Combined measure has high recall"],
+    weak: [{ t: "Hand-coded validation set is drawn from media reports, which over-represent high-profile shutdowns.", p: "author-acknowledged", loc: "p. 9" }],
+    hist: [["R2", "abstract", "include", "Measurement focus"], ["R2", "full text", "include", "Key measurement paper"]], themes: ["measurement"] },
+  { key: "dahl2018diffusion", authors: "Dahl", year: 2018, title: "Digital Repression and Its Diffusion", venue: "Democratization",
+    status: "exclude", text: "abstract", round: "R0", design: "Descriptive quantitative", contribution: "Descriptive",
+    ident: "Cross-national counts", cases: "Global", period: "2000–2016", unit: "Country-year",
+    summary: "Documents the spread of digital repression tools; does not study violence.", findings: [], weak: [],
+    hist: [["R0", "abstract", "exclude", "No violence outcome"]], themes: ["diffusion"] },
+  { key: "suri2024protest", authors: "Suri & Kamau", year: 2024, title: "Shutdowns and Street Protest: A Survey Experiment", venue: "American Journal of Political Science",
+    status: "include", text: "none", round: "R1", design: "Survey experiment", contribution: "Causal estimate",
+    ident: "Randomised vignettes about connectivity loss", cases: "Kenya", period: "2023", unit: "Respondent",
+    summary: "Shortlisted from title only; abstract not yet retrieved.", findings: [], weak: [],
+    hist: [["R1", "abstract", "maybe", "Abstract missing in OpenAlex"]], themes: ["protest"] },
+  { key: "nguyen2021telecom", authors: "Nguyen", year: 2021, title: "Telecom Ownership and the Capacity to Shut Down", venue: "Journal of Politics",
+    status: "maybe", text: "abstract", round: "R2", design: "Selection on observables", contribution: "Descriptive",
+    ident: "Cross-national regression on state ownership of telecoms", cases: "Global", period: "2010–2020", unit: "Country-year",
+    summary: "State-owned telecoms make shutdowns more likely; relevant to measurement of shutdown capacity.", findings: ["Ownership predicts shutdown frequency"], weak: [],
+    hist: [["R2", "abstract", "maybe", "Indirectly relevant"]], themes: ["capacity"] },
+  { key: "berg2020mapping", authors: "Berg & Salo", year: 2020, title: "Mapping Violence When the Lights Go Out", venue: "Journal of Conflict Resolution",
+    status: "exclude", text: "full", round: "R0", design: "Measurement", contribution: "Measurement",
+    ident: "Compares event datasets during outages", cases: "Iraq", period: "2014–2017", unit: "Event",
+    summary: "Event datasets under-report violence during outages; excluded at full text because outcome is reporting, not violence.",
+    findings: ["Under-reporting of ~30% during outages"],
+    weak: [{ t: "Single country.", p: "author-acknowledged", loc: "p. 3" }],
+    hist: [["R0", "abstract", "include", "Possibly relevant"], ["R0", "full text", "exclude", "Outcome is reporting bias"], ["R2", "abstract", "include", "Re-included for measurement focus (user override)"]], themes: ["measurement", "reporting bias"] }
+];
+
+const reports = {
+  R0: { title: "Internet shutdowns and state violence: an initial overview", words: 3400, newCount: 21,
+    body: `<h3>1. Scope</h3><p>This review covers quantitative and qualitative work on government-imposed network disruptions and the scale or targeting of state violence. Twenty-one studies were included after full-text screening.</p>
+<h3>2. Two competing mechanisms</h3><p>The literature divides into accounts in which shutdowns enable violence by removing documentation and coordination <span class="cite" data-k="lindqvist2019dark">Lindqvist &amp; Oduya (2019)</span>, and accounts in which shutdowns are a by-product of crisis with no independent effect. The strongest design so far contrasts deliberate shutdowns with accidental outages and finds an effect only for the former <span class="cite" data-k="marchetti2021blackout">Marchetti (2021)</span>.</p>
+<h3>3. Gaps</h3><p><b>Identification.</b> Most studies cannot separate the shutdown from the offensive it accompanies. <b>Measurement.</b> Violence data are drawn from sources that themselves depend on connectivity <span class="cite" data-k="berg2020mapping">Berg &amp; Salo (2020)</span>. <b>Mechanisms.</b> Rumour correction is theorised but untested <span class="cite" data-k="okafor2020mobile">Okafor (2020)</span> <span class="pill may">abstract only</span>.</p>` },
+  R1: { title: "Deep dive: shutdown duration", words: 2100, newCount: 9,
+    body: `<h3>1. Why duration matters</h3><p>Round 0 treated shutdowns as binary. Duration is the obvious moderator: brief shutdowns may simply accompany a single operation, while prolonged ones change what armed actors can observe.</p>
+<h3>2. Evidence</h3><p>The only study with a credible design finds a non-linear effect that appears after the second week <span class="cite" data-k="ferreira2022length">Ferreira &amp; Holm (2022)</span>. Its duration variable is chosen by governments, so the estimate remains vulnerable to reverse causation.</p>
+<h3>3. Open question</h3><p>No study yet links duration to the targeting findings of <span class="cite" data-k="lindqvist2019dark">Lindqvist &amp; Oduya (2019)</span>.</p>` },
+  R2: { title: "Deep dive: measuring shutdowns", words: 1800, newCount: 8,
+    body: `<h3>1. Measures in use</h3><p>Studies rely on media-coded events, BGP routing data, traffic data, or night-time lights. BGP-based measures miss most mobile-only shutdowns <span class="cite" data-k="vance2023outage">Vance, Ito &amp; Barros (2023)</span>.</p>
+<h3>2. Consequences for Round 0 findings</h3><p>Several Round 0 studies use media-coded shutdowns, which over-represent high-profile events. Reporting bias in the violence measure compounds this <span class="cite" data-k="berg2020mapping">Berg &amp; Salo (2020)</span>, re-included this round after a user override.</p>` }
+};
+
+// ---------- state & helpers ----------
+const S = { project: null, tab: "sources", status: "all", textf: "all", round: "all", q: "", report: "R2" };
+const $ = s => document.querySelector(s);
+const statusPill = s => ({ include: '<span class="pill inc">included</span>', exclude: '<span class="pill exc">excluded</span>', maybe: '<span class="pill may">undecided</span>' })[s];
+const dot = t => ({ full: '<span class="txt"><span class="dot full"></span>full text</span>', abstract: '<span class="txt"><span class="dot half"></span>abstract</span>', none: '<span class="txt"><span class="dot"></span>metadata</span>' })[t];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+function render() {
+  const app = $("#app");
+  if (!S.project) {
+    $("#crumb").innerHTML = "";
+    app.innerHTML = `<div class="cards">${projects.map(p => {
+      const n = p.id === "shutdowns" ? sources : [];
+      return `<div class="card" data-p="${p.id}"><h3>${esc(p.title)}</h3><div class="rq">${esc(p.rq)}</div>
+        <div class="stats"><span><b>${p.rounds.length}</b>rounds</span>
+        <span><b>${n.filter(s => s.status === "include").length || (p.rounds[0] ? p.rounds[0].funnel[4] : 0)}</b>included</span>
+        <span><b>${n.filter(s => s.text === "full").length || (p.rounds[0] ? p.rounds[0].funnel[3] : 0)}</b>full text</span>
+        <span><b>${p.updated}</b>updated</span></div></div>`; }).join("")}
+      <div class="card newcard">+ New review project</div></div>`;
+    app.querySelectorAll("[data-p]").forEach(c => c.onclick = () => { S.project = projects.find(p => p.id === c.dataset.p); render(); });
+    return;
+  }
+  const p = S.project;
+  $("#crumb").innerHTML = `/ <a id="home">Projects</a> / ${esc(p.title)}`;
+  $("#home").onclick = () => { S.project = null; closeDrawer(); render(); };
+  const srcs = p.id === "shutdowns" ? sources : [];
+  const queue = srcs.filter(s => s.status !== "exclude" && s.text !== "full");
+  const tabs = [["sources", "Sources", srcs.length], ["reports", "Reports", p.rounds.length], ["rounds", "Rounds", p.rounds.length], ["queue", "Full-text queue", queue.length]];
+  let html = `<div class="note">${esc(p.rq)}</div><div class="tabs">${tabs.map(([id, l, n]) => `<div class="tab ${S.tab === id ? "on" : ""}" data-t="${id}">${l}<span class="n">${n}</span></div>`).join("")}</div>`;
+  if (S.tab === "sources") html += sourcesView(srcs);
+  if (S.tab === "reports") html += reportsView(p);
+  if (S.tab === "rounds") html += roundsView(p);
+  if (S.tab === "queue") html += queueView(queue);
+  app.innerHTML = html;
+  app.querySelectorAll("[data-t]").forEach(t => t.onclick = () => { S.tab = t.dataset.t; render(); });
+  wire(app);
+}
+
+function sourcesView(srcs) {
+  const rows = srcs.filter(s => (S.status === "all" || s.status === S.status) && (S.textf === "all" || s.text === S.textf)
+    && (S.round === "all" || s.round === S.round) && (!S.q || (s.title + s.authors + s.summary).toLowerCase().includes(S.q.toLowerCase())));
+  const seg = (name, opts) => `<div class="seg">${opts.map(([v, l]) => `<button data-f="${name}" data-v="${v}" class="${S[name] === v ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  return `<div class="filters">
+    ${seg("status", [["all", "All"], ["include", "Included"], ["maybe", "Undecided"], ["exclude", "Excluded"]])}
+    ${seg("textf", [["all", "Any text"], ["full", "Full text"], ["abstract", "Abstract"], ["none", "Metadata"]])}
+    <select id="roundsel"><option value="all">All rounds</option>${S.project.rounds.map(r => `<option ${S.round === r.id ? "selected" : ""}>${r.id}</option>`).join("")}</select>
+    <input type="search" id="q" placeholder="Search title, author, summary" value="${esc(S.q)}">
+    <div class="legend"><span class="txt"><span class="dot"></span>metadata</span><span class="txt"><span class="dot half"></span>abstract</span><span class="txt"><span class="dot full"></span>full text read</span></div>
+  </div>
+  <div class="tablewrap"><table><thead><tr><th>Status</th><th>Text</th><th>Source</th><th>Title</th><th>Design</th><th>Contribution</th><th>Summary</th><th>Weak.</th><th>Round</th></tr></thead><tbody>
+  ${rows.map(s => `<tr class="row" data-k="${s.key}"><td>${statusPill(s.status)}</td><td>${dot(s.text)}</td><td>${esc(s.authors)} (${s.year})</td>
+    <td class="title">${esc(s.title)}<br><span class="tag">${esc(s.venue)}</span></td><td>${esc(s.design)}</td><td>${esc(s.contribution)}</td>
+    <td class="sum">${esc(s.summary)}</td><td>${s.text === "full" ? s.weak.length : "<span title='Only assessed from full text'>–</span>"}</td><td>${s.round}</td></tr>`).join("") || `<tr><td colspan="9" class="note">No sources match these filters.</td></tr>`}
+  </tbody></table></div>`;
+}
+
+function reportsView(p) {
+  if (!p.rounds.length) return `<div class="note">No rounds yet. Start the initial overview from Claude Code.</div>`;
+  if (!reports[S.report] || p.id !== "shutdowns") S.report = p.rounds[0].id;
+  const r = p.id === "shutdowns" ? reports[S.report] : { title: p.title + ": initial overview", words: 3000, newCount: p.rounds[0].funnel[4], body: "<p class='note'>(Placeholder report.)</p>" };
+  const rd = p.rounds.find(x => x.id === S.report);
+  return `<div class="reports"><div class="vlist">${p.rounds.map(x => `<div class="ver ${x.id === S.report ? "on" : ""}" data-r="${x.id}"><b>${x.id} · ${esc(x.name)}</b><span>${x.date}${x.parent ? " · builds on " + x.parent : ""}</span></div>`).join("")}</div>
+    <article class="reader"><h2>${esc(r.title)}</h2>
+    <div class="meta"><span>${rd.date}</span><span>· ${r.words.toLocaleString()} words</span><span class="pill newp">${r.newCount} sources new this round</span><button class="btn">Open report.md</button><button class="btn">Compare with previous</button></div>
+    ${r.body}</article></div>`;
+}
+
+function roundsView(p) {
+  const labels = ["retrieved", "abstract screened", "shortlisted", "full text obtained", "included"];
+  const max = Math.max(...p.rounds.flatMap(r => r.funnel), 1);
+  return `<div class="rounds">${p.rounds.map(r => `<div class="round"><h3>${r.id} · ${esc(r.name)} ${r.parent ? `<span class="tag">builds on ${r.parent}</span>` : ""}</h3>
+    <div class="q">${esc(r.focus || "")}</div>${r.search ? `<code>${esc(r.search)}</code>` : ""}
+    <div class="funnel">${r.funnel.map((n, i) => `<div class="fstep"><div class="fbar" style="height:${Math.max(4, 70 * Math.sqrt(n / max))}px"></div><b>${n}</b>${labels[i]}</div>`).join("")}</div></div>`).join("")}
+    <div class="round nextround"><h3>Next round</h3><div class="q">Describe the focus. The GUI writes a request file and copies the prompt for Claude Code.</div>
+    <select style="margin-top:8px"><option>Builds on: ${p.rounds.length ? p.rounds[p.rounds.length - 1].id : "nothing"}</option>${p.rounds.map(r => `<option>Builds on: ${r.id}</option>`).join("")}</select>
+    <textarea placeholder="e.g. Targeting: who is killed during shutdowns, and does it differ by ethnic group?"></textarea>
+    <div class="btns"><button class="btn primary">Copy prompt for Claude Code</button></div></div></div>`;
+}
+
+function queueView(q) {
+  return `<div class="note">Shortlisted sources whose full text has not been read yet. Weaknesses and method critique stay empty until the full text is in.</div>
+  <div class="btns" style="margin-bottom:12px"><button class="btn primary">Copy refs-fetch command for all ${q.length}</button><button class="btn">Open pdfs/ folder</button></div>
+  <div class="queue">${q.map(s => `<div class="qrow">${dot(s.text)}<div class="t">${esc(s.authors)} (${s.year}). ${esc(s.title)}<small>${esc(s.venue)} · round ${s.round} · ${statusPill(s.status)}</small></div>
+    <span class="drop">Drop PDF here</span><button class="btn" data-k="${s.key}">Details</button><button class="btn">Not obtainable</button></div>`).join("")}</div>`;
+}
+
+function wire(app) {
+  app.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { S[b.dataset.f] = b.dataset.v; render(); });
+  const rs = $("#roundsel"); if (rs) rs.onchange = e => { S.round = e.target.value; render(); };
+  const q = $("#q"); if (q) q.oninput = e => { S.q = e.target.value; const pos = e.target.selectionStart; render(); const n = $("#q"); n.focus(); n.setSelectionRange(pos, pos); };
+  app.querySelectorAll("[data-r]").forEach(v => v.onclick = () => { S.report = v.dataset.r; render(); });
+  app.querySelectorAll("tr[data-k], .cite[data-k], button[data-k]").forEach(el => el.onclick = () => openDrawer(el.dataset.k));
+}
+
+function openDrawer(k) {
+  const s = sources.find(x => x.key === k); if (!s) return;
+  const citedIn = Object.entries(reports).filter(([, r]) => r.body.includes(`data-k="${k}"`)).map(([id]) => id);
+  $("#drawer").innerHTML = `<button class="x" id="dx">×</button><h2>${esc(s.title)}</h2>
+    <div class="meta">${esc(s.authors)} (${s.year}) · ${esc(s.venue)} · <code>${s.key}</code></div>
+    <div class="meta">${statusPill(s.status)} ${dot(s.text)} ${s.themes.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+    <h4>Summary <span class="pill ${s.text === "full" ? "inc" : "may"}">from ${s.text === "full" ? "full text" : s.text === "abstract" ? "abstract" : "metadata"}</span></h4><div>${esc(s.summary)}</div>
+    ${s.findings.length ? `<h4>Key findings</h4><ul>${s.findings.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
+    <h4>Evidence profile</h4><div class="kv"><div>Design</div><div>${esc(s.design)}</div><div>Identification</div><div>${esc(s.ident)}</div>
+      <div>Contribution</div><div>${esc(s.contribution)}</div><div>Unit</div><div>${esc(s.unit)}</div><div>Cases</div><div>${esc(s.cases)}</div><div>Period</div><div>${esc(s.period)}</div></div>
+    <h4>Weaknesses</h4>${s.text !== "full" ? `<div class="note">Not assessed: full text not read yet.</div>` : s.weak.map(w => `<div class="weak ${w.p === "author-acknowledged" ? "ack" : "inf"}">${esc(w.t)}<small>${w.p} · ${esc(w.loc)}</small></div>`).join("") || `<div class="note">None recorded.</div>`}
+    <h4>Screening history</h4><div class="hist">${s.hist.map(h => `<div><b>${h[0]}</b> · ${h[1]} · ${statusPill(h[2] === "include" ? "include" : h[2] === "exclude" ? "exclude" : "maybe")} ${esc(h[3])}</div>`).join("")}</div>
+    <h4>Cited in</h4><div>${citedIn.length ? citedIn.map(r => `<span class="tag">${r} report</span>`).join("") : '<span class="note">Not cited in any report.</span>'}</div>
+    <h4>Your notes</h4><textarea style="width:100%;min-height:60px" placeholder="Notes are stored in the source file and never edited by Claude"></textarea>
+    <div class="btns">${s.status !== "include" ? '<button class="btn">Include (override)</button>' : ""}${s.status !== "exclude" ? '<button class="btn">Exclude…</button>' : ""}${s.text === "full" ? '<button class="btn">Open PDF</button>' : '<button class="btn primary">Add PDF</button>'}<button class="btn">Open in Zotero</button></div>`;
+  $("#drawer").classList.add("open");
+  $("#dx").onclick = closeDrawer;
+}
+function closeDrawer() { $("#drawer").classList.remove("open"); }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+render();
+</script>
+</body>
+</html>
