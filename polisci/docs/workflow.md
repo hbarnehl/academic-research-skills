@@ -52,8 +52,43 @@ has for a user corpus.
 4. **A targeted keyword search** for what pools 1 to 3 do not cover. The round reports which
    sub-questions were left uncovered and why it searched.
 
+**Pool 2 is ranked before it is screened.** The library is not screened item by item each round.
+An embedding index of the library (title + abstract, `polisci/scripts/embed_library.py`) is built
+once and updated as items are added; a round ranks the library by similarity to its question and
+sub-strands, and only the top 150 go to abstract screening. Benchmarked on R0 of the satellite
+conflict detection review (1,205 items, full Gemini screen as reference): the top 100 held all 47
+includes and 61 of 64 include-or-maybe items, the top 150 held 62 of 64, the two misses weak
+`maybe`s. Items without an abstract (a quarter of the library) are ranked on the title alone, which
+held up in that test but is the weak spot to watch.
+
 Every candidate records which pool and which seed paper it came from, so the GUI can show, for
 example, "found by forward citation from Ferreira & Holm (2022)".
+
+**An overview round maps from abstracts and reads only a core.** In the first trial (R0,
+satellite conflict detection) the four pools produced 428 include-or-maybe sources, far more than
+can be read in full. So R0 clusters the whole corpus (embeddings, k-means, Gemini names each
+cluster from its central abstracts), reports funnel counts and gaps from abstracts, and picks a
+core of about 30 for full text: the most-linked papers per cluster, reviews, and papers bridging
+the review's strands. Later rounds deepen one cluster each. Topics that are out of scope for a
+round but worth keeping get the screening decision `defer` with a topic name, so a later round
+finds them in pool 1.
+
+**Appraisal and chapter in the first trial (2026-11-10).** The 30 core papers were appraised by
+Sonnet subagents with `polisci/prompts/appraisal.md`, given the v2 summary as a map and the PDF
+text split by page. Lessons:
+- *Cost did not fall.* About 105k to 155k tokens per paper (median about 120k), close to the
+  whole-PDF cost in the model test. Most of it is the agent's fixed context re-sent on each tool
+  call, not the paper text, so "read only the relevant pages" saves little on papers of 5k to 20k
+  words. Fewer tool calls matter more than fewer pages.
+- *Quotes are reliable, and checkable.* `polisci/scripts/check_quotes.py` matched all 220 quotes
+  against the text; 2 had one word added and were corrected. Text must be extracted in reading
+  order (`pdftotext` without `-layout`, which interleaves columns); the checker normalises
+  ligatures, soft hyphens, control characters and the line numbers of line-numbered preprints.
+- *Stage 6 (focused reading notes) was skipped for R0.* An overview has no narrow focus; the
+  appraisal's "For this review" section and the v2 summaries were enough for the chapter, whose
+  page citations come from the checked quotes. Focused notes start with the first deepening round.
+- `polisci/scripts/compile_appraisals.py` turns the appraisals into a table of design,
+  contribution and weakness counts by type and severity, which the chapter's synthesis drew on.
 
 This allows two kinds of round:
 

@@ -47,6 +47,10 @@ files, not to how we build things in `polisci/`.
 ```
 polisci/
   docs/          plans, design notes, GUI sketch (start with docs/README.md)
+  scripts/       prototype pipeline scripts (Gemini abstract screening, library embedding index,
+                 OpenAlex citation chasing and keyword search, cluster map, appraisal quote check
+                 and compilation)
+  prompts/       prompts for subagents (critical appraisal)
 ```
 
 Add new top-level folders under `polisci/` to this list as they are created (skill, app, etc.).

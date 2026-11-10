@@ -124,10 +124,12 @@ dialog: `app.plugins.plugins["obsidian-zotero-desktop-connector"].runImport("imp
 (`"Import book"` for books). It renders the usual template, so the note is identical to a manual
 import. It needs Obsidian and Zotero running. Ways to trigger it from outside Obsidian:
 
-- **Queue file plus one QuickAdd command (recommended first step).** The pipeline writes the
-  citekeys to import into a queue file. A QuickAdd user script (like `run-read-workflow.js`) reads
-  the queue, calls `runImport` for each, and optionally runs `read_paper.py` on each new note.
-  One command imports and summarises a whole batch.
+- **Queue file plus one QuickAdd command (implemented 2026-11-10).** The pipeline writes the
+  citekeys to `~/research/lit-reviews/import-queue.txt`. The QuickAdd macro `import queue`
+  (`user_scripts/import-queue.js`) calls `runImport("import paper", key)` for each, skips keys that
+  already have a note and leaves failures in the queue. Claude triggers it without a click via
+  `xdg-open "obsidian://quickadd?vault=phd&choice=import%20queue"` (QuickAdd's URI handler), then
+  runs `read_paper.py` on the new notes from the shell. 23 notes imported in under 10 seconds.
 - **Obsidian CLI** (`obsidian eval`, Obsidian 1.12+). Fully automatic. It is not on PATH on this
   machine yet (Obsidian 1.15 AppImage; the CLI is enabled in Obsidian's settings), and the vault's
   rules ask for approval for each `eval`.
@@ -142,7 +144,7 @@ YAML state files. The vault only holds the human-facing outputs.
 
 1. Gemini or Claude for the summary step? Gemini Flash is cheap and already trusted. Using
    Claude would put everything on one provider, but costs more.
-2. Queue-file QuickAdd command or Obsidian CLI for the automatic import? The first works now;
-   the second needs the CLI enabled and an approval rule for `eval`.
+2. ~~Queue-file QuickAdd command or Obsidian CLI?~~ Settled: queue file plus QuickAdd URI, no
+   CLI needed.
 3. Should round reports link back to the project (a hub note per review in `notes/`), following
    the vault's project-note conventions?
