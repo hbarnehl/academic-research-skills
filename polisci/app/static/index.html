@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Literature reviews</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<style>
+:root {
+  --bg: #f7f6f3; --panel: #fff; --text: #1f2328; --muted: #6a737d; --line: #e3e1dc;
+  --accent: #2f5d8a; --accent-soft: #e6eef6; --high: #b42318; --med: #b54708; --low: #667085;
+  --inc: #1a7f37; --maybe: #9a6700; --exc: #b42318;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181c; --panel: #1e2126; --text: #e6e6e6; --muted: #9aa1a9; --line: #30343b;
+    --accent: #7fb0e0; --accent-soft: #233243; --high: #f97066; --med: #fdb022; --low: #98a2b3;
+    --inc: #4ac26b; --maybe: #d4a72c; --exc: #f97066;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
+header { padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--panel); display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+header h1 { font-size: 16px; margin: 0; cursor: pointer; }
+header .q { color: var(--muted); font-size: 13px; flex: 1; min-width: 200px; }
+nav { display: flex; gap: 4px; padding: 0 20px; background: var(--panel); border-bottom: 1px solid var(--line); }
+nav button { border: 0; background: none; padding: 10px 12px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; font: inherit; }
+nav button.on { color: var(--text); border-bottom-color: var(--accent); }
+main { padding: 16px 20px; max-width: 1400px; }
+a { color: var(--accent); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; cursor: pointer; }
+.card:hover { border-color: var(--accent); }
+.card h2 { font-size: 15px; margin: 0 0 6px; }
+.muted { color: var(--muted); }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+input, select, textarea { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+textarea { width: 100%; min-height: 70px; }
+button.btn { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+button.btn:hover { border-color: var(--accent); }
+.tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; position: sticky; top: 0; background: var(--panel); }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--accent-soft); }
+.dec-include { color: var(--inc); } .dec-maybe { color: var(--maybe); } .dec-exclude { color: var(--exc); }
+.ov { font-size: 11px; border: 1px solid currentColor; border-radius: 4px; padding: 0 3px; margin-left: 4px; }
+.dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--muted); vertical-align: -1px; }
+.dot.abstract { background: linear-gradient(90deg, var(--muted) 50%, transparent 50%); }
+.dot.full_text { background: var(--muted); }
+.sev { font-size: 11px; padding: 0 5px; border-radius: 4px; border: 1px solid currentColor; white-space: nowrap; }
+.sev.high { color: var(--high); } .sev.medium { color: var(--med); } .sev.low { color: var(--low); }
+.chip { font-size: 11px; padding: 1px 6px; border-radius: 10px; background: var(--accent-soft); white-space: nowrap; }
+#drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(720px, 100vw); background: var(--panel); border-left: 1px solid var(--line); box-shadow: -4px 0 20px rgba(0,0,0,.12); overflow-y: auto; padding: 18px 22px 40px; transform: translateX(105%); transition: transform .15s; z-index: 10; }
+#drawer.open { transform: none; }
+#drawer h2 { font-size: 17px; margin: 0 0 4px; padding-right: 30px; }
+#drawer h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 20px 0 6px; }
+#drawer .close { position: absolute; right: 16px; top: 14px; }
+.weak { border-left: 3px solid var(--line); padding: 4px 10px; margin: 8px 0; }
+.weak.high { border-left-color: var(--high); } .weak.medium { border-left-color: var(--med); }
+dl { display: grid; grid-template-columns: 120px 1fr; gap: 4px 12px; margin: 0; }
+dt { color: var(--muted); }
+dd { margin: 0; }
+.report { display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
+.report aside { position: sticky; top: 10px; align-self: start; font-size: 13px; }
+.report aside a { display: block; padding: 3px 0; text-decoration: none; }
+.report aside a.h3 { padding-left: 12px; color: var(--muted); }
+.prose { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 28px; max-width: 860px; }
+.prose table { width: auto; }
+.prose blockquote { border-left: 3px solid var(--line); margin: 0; padding-left: 12px; color: var(--muted); }
+a.cite { text-decoration: none; border-bottom: 1px dotted var(--accent); }
+.bar { height: 8px; background: var(--accent); border-radius: 4px; }
+@media (max-width: 800px) { .report { grid-template-columns: 1fr; } .report aside { position: static; } }
+</style>
+</head>
+<body>
+<header><h1 onclick="location.hash=''">Literature reviews</h1><span class="q" id="q"></span></header>
+<nav id="tabs" hidden></nav>
+<main id="main">Loading…</main>
+<div id="drawer"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+let P = null;             // current project payload
+let round = null;         // selected round id
+let tab = "sources";
+const F = {q: "", decision: "", cluster: "", text: "", core: false, sort: "core", dir: -1};
+
+// ---- routing: #/<slug>/<tab> --------------------------------------------------------------
+window.addEventListener("hashchange", route);
+route();
+
+async function route() {
+  const [, slug, t] = location.hash.split("/");
+  if (!slug) return projects();
+  if (!P || P.slug !== slug) {
+    P = await (await fetch(`/api/project/${slug}`)).json();
+    round = P.rounds.at(-1).id;
+  }
+  tab = t || "sources";
+  $("#q").textContent = P.question;
+  $("#tabs").hidden = false;
+  $("#tabs").innerHTML = ["sources", "reports", "rounds"].map(x =>
+    `<button class="${x === tab ? "on" : ""}" onclick="location.hash='#/${slug}/${x}'">${x[0].toUpperCase() + x.slice(1)}</button>`).join("");
+  ({sources, reports, rounds})[tab]();
+}
+
+async function projects() {
+  P = null; $("#tabs").hidden = true; $("#q").textContent = "";
+  const list = await (await fetch("/api/projects")).json();
+  $("#main").innerHTML = `<div class="cards">${list.map(p => `
+    <div class="card" onclick="location.hash='#/${p.slug}'">
+      <h2>${esc(p.slug.replaceAll("-", " "))}</h2>
+      <div>${esc(p.question)}</div>
+      <p class="muted">${p.rounds.length} round(s) · ${p.n_sources} sources · ${p.n_full_text} read in full · updated ${p.updated}</p>
+    </div>`).join("") || "No projects found."}</div>`;
+}
+
+// ---- sources ------------------------------------------------------------------------------
+const user = key => P.user[key] || {};
+const override = s => user(s.id).overrides?.[round];
+const decision = s => override(s)?.decision || s.decision;
+const sevCount = (s, sev) => (s.appraisal?.weaknesses || []).filter(w => w.severity?.startsWith(sev)).length;
+const authors = s => (s.authors || []).length > 2 ? `${s.authors[0]} et al.` : (s.authors || []).join(" & ");
+
+function sources() {
+  const all = P.sources[round];
+  const clusters = [...new Set(all.map(s => s.cluster))].sort();
+  $("#main").innerHTML = `
+    <div class="filters">
+      ${P.rounds.length > 1 ? `<select onchange="round=this.value;sources()">${P.rounds.map(r => `<option ${r.id === round ? "selected" : ""}>${r.id}</option>`).join("")}</select>` : ""}
+      <input id="fq" placeholder="Search title, author, key" value="${esc(F.q)}" oninput="F.q=this.value;drawTable()" style="min-width:240px">
+      ${sel("decision", ["include", "maybe", "exclude"])}
+      ${sel("cluster", clusters)}
+      ${sel("text", ["full_text", "abstract", "title"], "text read")}
+      <label><input type="checkbox" ${F.core ? "checked" : ""} onchange="F.core=this.checked;drawTable()"> core only</label>
+      <span class="muted" id="count"></span>
+    </div>
+    <div class="tablewrap"><table><thead><tr>
+      ${th("text_status", "")}${th("title", "Source")}${th("year", "Year")}${th("decision", "Decision")}${th("cluster", "Cluster")}${th("pool", "Pool")}${th("links", "Links")}${th("core", "Core")}${th("weak", "Weaknesses H/M/L")}
+    </tr></thead><tbody id="rows"></tbody></table></div>`;
+  drawTable();
+}
+
+function sel(field, options, label = field) {
+  return `<select onchange="F.${field}=this.value;drawTable()"><option value="">all ${label}</option>${options.map(o =>
+    `<option ${F[field] === o ? "selected" : ""} value="${esc(o)}">${esc(o)}</option>`).join("")}</select>`;
+}
+function th(key, label) {
+  return `<th onclick="F.dir=F.sort==='${key}'?-F.dir:-1;F.sort='${key}';drawTable()">${label}${F.sort === key ? (F.dir > 0 ? " ▲" : " ▼") : ""}</th>`;
+}
+
+function drawTable() {
+  const q = F.q.toLowerCase();
+  const sortVal = {
+    core: s => (s.core ? 1e6 : 0) + (s.links || 0), weak: s => sevCount(s, "high") * 100 + sevCount(s, "medium"),
+    decision, year: s => +s.year || 0, links: s => s.links || 0,
+  }[F.sort] || (s => String(s[F.sort] ?? "").toLowerCase());
+  const rows = P.sources[round].filter(s =>
+      (!q || `${s.title} ${(s.authors || []).join(" ")} ${s.id} ${s.citekey}`.toLowerCase().includes(q)) &&
+      (!F.decision || decision(s) === F.decision) && (!F.cluster || s.cluster === F.cluster) &&
+      (!F.text || s.text_status === F.text) && (!F.core || s.core))
+    .sort((a, b) => { const x = sortVal(a), y = sortVal(b); return (x > y ? 1 : x < y ? -1 : 0) * F.dir; });
+  $("#count").textContent = `${rows.length} of ${P.sources[round].length}`;
+  $("#rows").innerHTML = rows.map(s => `<tr onclick="openSource('${s.id}')">
+    <td><span class="dot ${s.text_status}" title="${s.text_status.replace("_", " ")}"></span></td>
+    <td>${esc(s.title)}<div class="muted">${esc(authors(s))}${user(s.id).note ? " · ✎ note" : ""}</div></td>
+    <td>${esc(s.year)}</td>
+    <td class="dec-${decision(s)}">${decision(s)}${override(s) ? `<span class="ov" title="your override">you</span>` : ""}</td>
+    <td class="muted">${esc(s.cluster)}</td><td>${esc(s.pool)}</td><td>${s.links ?? ""}</td><td>${s.core ? "★" : ""}</td>
+    <td>${s.appraisal ? `${sevCount(s, "high")} / ${sevCount(s, "medium")} / ${sevCount(s, "low")}` : ""}</td></tr>`).join("");
+}
+
+// ---- source drawer ------------------------------------------------------------------------
+function openSource(id) {
+  const s = Object.values(P.sources).flat().find(x => x.id === id);
+  if (!s) return;
+  const a = s.appraisal, u = user(id), ov = override(s);
+  const vaultLink = s.in_vault ? `<a href="obsidian://open?vault=${P.vault}&file=readings/${encodeURIComponent(s.citekey || id)}">open in vault</a>` : "";
+  $("#drawer").innerHTML = `
+    <button class="btn close" onclick="closeDrawer()">✕</button>
+    <h2>${esc(s.title)}</h2>
+    <div class="muted">${esc((s.authors || []).join(", "))} (${esc(s.year)})${s.venue ? `, ${esc(s.venue)}` : ""}</div>
+    <p>${[s.doi && `<a href="https://doi.org/${esc(s.doi)}" target="_blank">doi</a>`, vaultLink, `<code>${esc(s.citekey || id)}</code>`].filter(Boolean).join(" · ")}</p>
+    <dl>
+      <dt>Text read</dt><dd><span class="dot ${s.text_status}"></span> ${s.text_status.replace("_", " ")}</dd>
+      <dt>Cluster</dt><dd>${esc(s.cluster)}</dd>
+      <dt>Found via</dt><dd>${esc(s.pool)}${s.links ? `, linked to ${s.links} seed(s)` : ""}</dd>
+      ${s.core ? `<dt>Core</dt><dd>★ ${esc(s.core_why)}</dd>` : ""}
+    </dl>
+
+    <h3>Screening (${round})</h3>
+    <p><span class="dec-${s.decision}">${s.decision}</span> by Claude, from the ${esc(s.read)}: ${esc(s.reason)}</p>
+    ${ov ? `<p><span class="dec-${ov.decision}">${ov.decision}</span> by you (${esc(ov.date)}): ${esc(ov.reason)}</p>` : ""}
+    <div class="filters">
+      <select id="ovd"><option value="">no override</option>${["include", "maybe", "exclude"].map(d => `<option ${ov?.decision === d ? "selected" : ""}>${d}</option>`).join("")}</select>
+      <input id="ovr" placeholder="Reason" value="${esc(ov?.reason || "")}" style="flex:1">
+      <button class="btn" onclick="saveOverride('${id}')">Save</button>
+    </div>
+
+    <h3>Your note</h3>
+    <textarea id="note">${esc(u.note || "")}</textarea>
+    <button class="btn" onclick="saveNote('${id}')">Save note</button> <span class="muted" id="saved"></span>
+
+    ${a ? `
+    <h3>Appraisal (full text)</h3>
+    <p><b>${esc(a.main_claim)}</b></p>
+    <dl>
+      <dt>Paper type</dt><dd>${esc(a.paper_type)}</dd>
+      <dt>Design</dt><dd>${esc(a.design)}</dd>
+      <dt>Contribution</dt><dd>${esc(a.contribution)}</dd>
+      <dt>Validation</dt><dd>${esc(a.validation)}</dd>
+      <dt>For this review</dt><dd>${esc(a.for_review)}</dd>
+    </dl>
+    <h3>Weaknesses (${a.weaknesses.length})</h3>
+    ${a.weaknesses.map(w => `<div class="weak ${(w.severity || "").split(/\W/)[0]}">
+      <b>${esc(w.title)}</b><br>
+      <span class="sev ${(w.severity || "").split(/\W/)[0]}">${esc(w.severity)}</span>
+      <span class="chip">${esc(w.type)}</span>
+      <span class="chip" title="author_acknowledged = the authors say so; reader = inferred by the appraiser">${w.provenance === "author" ? "authors acknowledge" : w.provenance === "reader" ? "reader-inferred" : esc(w.provenance)}</span>
+      <div>${esc(w.weakness)}</div></div>`).join("")}
+    ${s.appraisal_md ? `<details><summary>Full appraisal with quoted evidence and pages</summary><div>${marked.parse(s.appraisal_md)}</div></details>` : ""}
+    ` : ""}
+
+    <h3>Abstract</h3>
+    <p>${s.abstract ? esc(s.abstract) : `<span class="muted">No abstract on record.</span>`}</p>`;
+  $("#drawer").classList.add("open");
+  $("#drawer").scrollTop = 0;
+}
+function closeDrawer() { $("#drawer").classList.remove("open"); }
+document.addEventListener("keydown", e => e.key === "Escape" && closeDrawer());
+
+async function post(body) {
+  P.user = await (await fetch(`/api/project/${P.slug}/user`, {method: "POST", body: JSON.stringify(body)})).json();
+}
+async function saveOverride(id) {
+  await post({key: id, round, decision: $("#ovd").value, reason: $("#ovr").value});
+  openSource(id); if (tab === "sources") drawTable();
+}
+async function saveNote(id) {
+  await post({key: id, note: $("#note").value});
+  $("#saved").textContent = "saved"; if (tab === "sources") drawTable();
+}
+
+// ---- reports ------------------------------------------------------------------------------
+// [[citekey|Label]] opens the source drawer when the key is in the project, else the vault note.
+function wikilinks(md) {
+  const keys = new Map(Object.values(P.sources).flat().map(s => [s.citekey || s.id, s.id]));
+  return md.replace(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g, (_, target, label) => {
+    const key = target.trim(), text = esc(label || key);
+    const report = P.reports.findIndex(r => r.name === key);
+    if (report >= 0) return `<a href="javascript:sessionStorage.report=${report};location.hash='#/${P.slug}/reports';reports()">${text}</a>`;
+    return keys.has(key)
+      ? `<a class="cite" href="javascript:openSource('${keys.get(key)}')">${text}</a>`
+      : `<a href="obsidian://open?vault=${P.vault}&file=${encodeURIComponent(key)}">${text}</a>`;
+  });
+}
+
+function reports() {
+  if (!P.reports.length) { $("#main").innerHTML = `<p class="muted">No report hub in the vault names this project's folder.</p>`; return; }
+  const sel = +(sessionStorage.report || 0) < P.reports.length ? +(sessionStorage.report || 0) : 0;
+  const r = P.reports[sel];
+  const html = marked.parse(wikilinks(r.text.replace(/^%%[\s\S]*?%%$/gm, "").replace(/^> \[!(\w+)\]-?\s*/gm, "> **$1:** ")));
+  $("#main").innerHTML = `<div class="report"><aside>
+      ${P.reports.map((x, i) => `<a href="javascript:sessionStorage.report=${i};reports()" style="${i === sel ? "font-weight:600" : ""}">${esc(x.name.replace(/^claude report on /, ""))}</a>`).join("")}
+      <hr style="border:0;border-top:1px solid var(--line)"><div id="toc"></div>
+      <p><a href="obsidian://open?vault=${P.vault}&file=notes/${encodeURIComponent(r.name)}">open in vault</a></p>
+    </aside><div class="prose" id="prose">${html}</div></div>`;
+  $("#toc").innerHTML = [...$("#prose").querySelectorAll("h2, h3")].map((h, i) => {
+    h.id = `h${i}`; return `<a class="${h.tagName.toLowerCase()}" href="javascript:document.getElementById('h${i}').scrollIntoView()">${esc(h.textContent)}</a>`;
+  }).join("");
+}
+
+// ---- rounds -------------------------------------------------------------------------------
+function rounds() {
+  const clusters = [...P.clusters].sort((a, b) => b.size - a.size);
+  const max = Math.max(...clusters.map(c => c.size));
+  $("#main").innerHTML = P.rounds.map(r => `
+    <h2>${r.id}</h2>
+    ${r.docs.map ? `<details open><summary><b>Map and funnel</b></summary><div class="prose">${marked.parse(wikilinks(r.docs.map))}</div></details>` : ""}
+    ${r.docs.protocol ? `<details><summary><b>Protocol</b></summary><div class="prose">${marked.parse(r.docs.protocol)}</div></details>` : ""}`).join("") + `
+    <h2>Clusters (R0)</h2>
+    <div class="tablewrap"><table><thead><tr><th>Cluster</th><th>Size</th><th style="width:30%"></th></tr></thead><tbody>
+    ${clusters.map(c => `<tr onclick="F.cluster='${esc(c.name)}';location.hash='#/${P.slug}/sources'">
+      <td><b>${esc(c.name)}</b><div class="muted">${esc(c.description)}</div></td><td>${c.size}</td>
+      <td><div class="bar" style="width:${100 * c.size / max}%"></div></td></tr>`).join("")}
+    </tbody></table></div>`;
+}
+</script>
+</body>
+</html>

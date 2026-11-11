@@ -4,6 +4,25 @@ A local app for browsing literature review projects. Claude Code does the resear
 files. The GUI reads those files and records a few decisions of yours. Clickable mockup with
 fictional data: [gui-sketch.html](gui-sketch.html).
 
+## Status (2026-11-11): v1 built
+
+`polisci/app/`: run `python polisci/app/server.py`, open http://localhost:8765. It differs from the
+plan below in two ways. It is standard-library Python plus one HTML page with plain JavaScript
+(no FastAPI or htmx, nothing to install), and it reads the layout the R0 trial actually produced
+(`rounds/<id>/corpus_annotated.json`, `core.json`, `clusters.json`, `appraisal/`, `map.md`,
+`protocol.md`) rather than `project.yaml` and `sources/<bibkey>.yaml`, which do not exist yet.
+
+- **Projects:** every folder under `~/research/lit-reviews/` with a `rounds/` folder.
+- **Sources:** filter, sort and search the corpus; drawer with screening reason, appraisal
+  (profile, weaknesses with severity and provenance, full appraisal with quoted pages), abstract,
+  DOI and vault links.
+- **Reports:** the vault hub that names the project folder plus its chapter notes; citations open
+  the source drawer.
+- **Rounds:** each round's map (funnel, gaps) and protocol, and the cluster list (a click filters
+  the sources).
+- **Writes:** overrides (per round, with reason) and notes go to `<project>/user.json`.
+- **Not yet:** full-text queue, drafting the next round, staleness of vault notes.
+
 ## Principles
 
 1. **Files are the source of truth.** The GUI is a view over a project folder, not a database

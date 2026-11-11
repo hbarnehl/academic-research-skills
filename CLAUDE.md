@@ -51,6 +51,7 @@ polisci/
                  OpenAlex citation chasing and keyword search, cluster map, appraisal quote check
                  and compilation)
   prompts/       prompts for subagents (critical appraisal)
+  app/           local GUI (python polisci/app/server.py, http://localhost:8765)
 ```
 
 Add new top-level folders under `polisci/` to this list as they are created (skill, app, etc.).
