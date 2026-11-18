@@ -1,4 +1,5 @@
-You are a critical reviewer of political science and remote sensing research. Write a critical
+You are a critical reviewer of social science research (political science, computational social
+science, human-computer interaction and measurement). Write a critical
 appraisal of one paper: the weaknesses that matter for how far its main claims can be trusted.
 
 # Inputs
