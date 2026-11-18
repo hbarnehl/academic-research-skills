@@ -13,12 +13,14 @@ TEXT_DIR holds <citekey>.txt with `=== PDF page N ===` markers; APPRAISAL_DIR ho
 import argparse
 import json
 import re
+import unicodedata
 from pathlib import Path
 
 QUOTE = re.compile(r'\*\*Evidence\*\*:\s*["“](.+?)["”]\s*\(([^)]*)\)')
 
 
 def norm(s: str) -> str:
+    s = unicodedata.normalize("NFKC", s)  # math-italic letters (𝑀, 𝐹) and ligatures
     s = re.sub(r"\n\s*\d{1,4}\s*(?=\n)", "", s)  # line numbers of line-numbered preprints
     s = re.sub(r"[\x00-\x08\x0b-\x1f]", "", s)  # stray control characters
     s = s.replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
@@ -26,6 +28,7 @@ def norm(s: str) -> str:
     s = re.sub(r"\u00ad\s*", "", s)         # soft hyphens, also at line ends
     for lig, plain in {"ﬀ": "ff", "ﬁ": "fi", "ﬂ": "fl", "ﬃ": "ffi", "ﬄ": "ffl"}.items():
         s = s.replace(lig, plain)
+    s = s.replace("-", "")                  # pdftotext sometimes drops hyphens ("NonU.S.")
     return re.sub(r"\s+", " ", s).strip().lower()
 
 
